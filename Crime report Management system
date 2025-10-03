@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Management System</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+    }
+    .container {
+      background: #fff;
+      border: 2px solid #6a89cc;
+      border-radius: 18px;
+      padding: 28px 28px 20px 28px;
+      width: 780px;
+      box-shadow: 0 8px 24px rgba(106,137,204,0.12);
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .active {
+      display: block;
+    }
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #3867d6;
+      letter-spacing: 1px;
+      font-weight: 700;
+      font-size: 2rem;
+    }
+    h3 {
+      color: #218c74;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    button, .btn {
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #6a89cc 0%, #b8e994 100%);
+      font-size: 15px;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.3s;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(106,137,204,0.08);
+    }
+    button:hover, .btn:hover {
+      background: linear-gradient(90deg, #3867d6 0%, #78e08f 100%);
+      color: #fff;
+      transform: translateY(-2px) scale(1.03);
+    }
+    .card {
+      border: 2px solid #b8e994;
+      border-radius: 10px;
+      padding: 18px;
+      background: #f7fff7;
+      margin-top: 14px;
+      box-shadow: 0 2px 8px rgba(184,233,148,0.07);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: #f5f6fa;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(106,137,204,0.06);
+    }
+    th, td {
+      border: 1px solid #dff9fb;
+      padding: 10px;
+      text-align: center;
+      font-size: 15px;
+    }
+    th {
+      background: linear-gradient(90deg, #6a89cc 0%, #b8e994 100%);
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    tr:nth-child(even) td {
+      background: #eaf6fb;
+    }
+    textarea, input, select {
+      width: 100%;
+      padding: 9px;
+      margin-top: 7px;
+      border-radius: 6px;
+      border: 1px solid #b8e994;
+      font-size: 15px;
+      background: #f5f6fa;
+      transition: border-color 0.2s;
+    }
+    textarea:focus, input:focus, select:focus {
+      border-color: #3867d6;
+      outline: none;
+    }
+    label {
+      font-weight: 500;
+      color: #218c74;
+      margin-top: 8px;
+      display: block;
+    }
+    #loginError {
+      color: #eb2f06;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 12px;
+      background: #f8d7da;
+      border-radius: 6px;
+      padding: 7px;
+      border: 1px solid #eb2f06;
+      display: none;
+    }
+    ul {
+      padding-left: 18px;
+      margin: 0;
+    }
+    ul li {
+      margin-bottom: 6px;
+      color: #3867d6;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container {
+        width: 98vw;
+        padding: 10px;
+      }
+    }
+    @media (max-width: 600px) {
+      .container {
+        width: 100vw;
+        padding: 2px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Selection Page -->
+  <div id="loginSelect" class="container active">
+    <h2>Choose Login Type</h2>
+    <div class="grid">
+      <button onclick="showLoginForm('admin')">Admin Login</button>
+      <button onclick="showLoginForm('cid')">CID Login</button>
+      <button onclick="showLoginForm('nco')">NCO Login</button>
+    </div>
+  </div>
+
+  <!-- Admin Login -->
+  <div id="adminLogin" class="container">
+    <h2>Admin Login</h2>
+    <form onsubmit="login(event, 'admin')">
+      <label>Username (letters only):</label>
+      <input type="text" id="adminUsername" pattern="[A-Za-z]+" required>
+      <label>Password:</label>
+      <input type="password" id="adminPassword" required>
+      <button type="submit">Login</button>
+      <button type="button" onclick="backToLoginSelect()">Back</button>
+    </form>
+    <div id="adminLoginError"></div>
+  </div>
+
+  <!-- CID Login -->
+  <div id="cidLogin" class="container">
+    <h2>CID Login</h2>
+    <form onsubmit="login(event, 'cid')">
+      <label>Username (letters only):</label>
+      <input type="text" id="cidUsername" pattern="[A-Za-z]+" required>
+      <label>Password:</label>
+      <input type="password" id="cidPassword" required>
+      <button type="submit">Login</button>
+      <button type="button" onclick="backToLoginSelect()">Back</button>
+    </form>
+    <div id="cidLoginError"></div>
+  </div>
+
+  <!-- NCO Login -->
+  <div id="ncoLogin" class="container">
+    <h2>NCO Login</h2>
+    <form onsubmit="login(event, 'nco')">
+      <label>Username (letters only):</label>
+      <input type="text" id="ncoUsername" pattern="[A-Za-z]+" required>
+      <label>Password:</label>
+      <input type="password" id="ncoPassword" required>
+      <button type="submit">Login</button>
+      <button type="button" onclick="backToLoginSelect()">Back</button>
+    </form>
+    <div id="ncoLoginError"></div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="admin" class="container">
+    <h2>Admin Dashboard</h2>
+    <div class="grid">
+      <button onclick="showPage('manageStaff')">Manage Staff</button>
+      <button onclick="showPage('assign')">Assign Cases</button>
+      <button onclick="showPage('cases')">View All Cases</button>
+      <button onclick="showPage('reports')">Generate Reports</button>
+      <button onclick="showPage('accessControl')">Control Access</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+    <div class="card">
+      <h3>Recent Actions:</h3>
+      <ul id="recentActions">
+        <!-- Recent actions will be inserted here -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- Access Control Page (placeholder) -->
+  <div id="accessControl" class="container">
+    <h2>Control Access</h2>
+    <div class="card">
+      <p>Access control features go here.</p>
+    </div>
+    <button onclick="showPage('admin')">Back</button>
+  </div>
+
+  <!-- CID Dashboard -->
+  <div id="cid" class="container">
+    <h2>CID Dashboard</h2>
+    <div class="grid">
+      <button onclick="showPage('cases')">View All Cases</button>
+      <button onclick="showPage('reports')">Analyze Reports</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+    <div class="card">
+      <h3>Cases Summary:</h3>
+      <ul>
+        <li>Total: 120</li>
+        <li>Open: 45</li>
+        <li>Investigating: 15</li>
+        <li>Closed: 60</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- NCO Dashboard -->
+  <div id="nco" class="container">
+    <h2>NCO Dashboard</h2>
+    <div class="grid">
+      <button onclick="showPage('createCase')">Create Case</button>
+      <button onclick="showPage('updateCase')">Update Case Details</button>
+      <button onclick="showPage('viewMyCases')">View My Cases</button>
+      <button onclick="showPage('searchNcoCases')">Search Case</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+    <div class="card">
+      <h3>Assigned Cases:</h3>
+      <ul>
+        <li>Case ID: 101 | Theft at Market | Open</li>
+        <li>Case ID: 102 | Burglary Apt 203 | Closed</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- View My Cases Page -->
+  <div id="viewMyCases" class="container">
+    <h2>My Cases</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Location</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Assigned Officer</th>
+            <th>Evidence</th>
+          </tr>
+        </thead>
+        <tbody id="myCasesTableBody">
+          <!-- My cases will be inserted here -->
+        </tbody>
+      </table>
+      <button type="button" onclick="showPage('nco')">Back</button>
+    </div>
+  </div>
+
+  <!-- Search NCO Cases Page -->
+  <div id="searchNcoCases" class="container">
+    <h2>Search Case</h2>
+    <form onsubmit="searchNcoCases(event)">
+      <label>Search by Title:</label>
+      <input type="text" id="searchNcoCaseInput" placeholder="Enter case title">
+      <button type="submit">Search</button>
+      <button type="button" onclick="resetSearchNcoCases()">Reset</button>
+    </form>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Location</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Assigned Officer</th>
+            <th>Evidence</th>
+          </tr>
+        </thead>
+        <tbody id="searchNcoCasesTableBody">
+          <!-- Search results will be inserted here -->
+        </tbody>
+      </table>
+      <button type="button" onclick="showPage('viewMyCases')">View All Cases</button>
+      <button type="button" onclick="showPage('nco')">Back</button>
+    </div>
+  </div>
+
+  <!-- Create Case Page (NCO) -->
+  <div id="createCase" class="container">
+    <h2>Create Case</h2>
+    <div class="card">
+      <form onsubmit="addNcoCase(event)">
+        <label>Case Title:</label>
+        <input type="text" id="ncoCaseTitle" required>
+        <label>Description:</label>
+        <textarea id="ncoCaseDescription" required></textarea>
+        <label>Status:</label>
+        <select id="ncoCaseStatus" required>
+          <option value="Open">Open</option>
+          <option value="Investigating">Investigating</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <label>Assign Staff:</label>
+        <input type="text" id="ncoAssignedStaff" required>
+        <label>Date:</label>
+        <input type="date" id="ncoCaseDate" required>
+        <label>Location:</label>
+        <input type="text" id="ncoCaseLocation" required>
+        <label>Upload Evidence (PDF):</label>
+        <input type="file" id="ncoCaseEvidence" accept="application/pdf">
+        <button type="submit">Submit</button>
+        <button type="button" onclick="showPage('nco')">Back</button>
+      </form>
+      <div id="ncoCaseMsg" style="color:green; margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Manage Staff -->
+  <div id="manageStaff" class="container">
+    <h2>Manage Staff</h2>
+    <button class="btn" onclick="showAddStaffForm()">Add New Staff</button>
+    <div id="addStaffForm" class="card" style="display:none;">
+      <form onsubmit="addStaff(event)">
+        <label>Name:</label>
+        <input type="text" id="staffName" required>
+        <label>Role:</label>
+        <input type="text" id="staffRole" required>
+        <button type="submit">Add</button>
+        <button type="button" onclick="hideAddStaffForm()">Cancel</button>
+      </form>
+    </div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="staffTableBody">
+          <!-- Staff rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+    <button onclick="showPage('admin')">Back</button>
+  </div>
+
+  <script>
+    // Staff data array
+    let staffList = [
+      { id: 1, name: "Inspector Raj", role: "Inspector" },
+      { id: 2, name: "Inspector Ravi", role: "Inspector" }
+    ];
+    let staffIdCounter = 3;
+
+    function renderStaffTable() {
+      const tbody = document.getElementById('staffTableBody');
+      tbody.innerHTML = '';
+      staffList.forEach(staff => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${staff.name}</td>
+          <td>${staff.role}</td>
+          <td>
+            <button onclick="deleteStaff(${staff.id})" style="background:linear-gradient(90deg,#eb2f06,#f6e58d);color:#fff;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showAddStaffForm() {
+      document.getElementById('addStaffForm').style.display = 'block';
+    }
+    function hideAddStaffForm() {
+      document.getElementById('addStaffForm').style.display = 'none';
+      document.getElementById('staffName').value = '';
+      document.getElementById('staffRole').value = '';
+    }
+
+    function addStaff(event) {
+      event.preventDefault();
+      const name = document.getElementById('staffName').value.trim();
+      const role = document.getElementById('staffRole').value.trim();
+      if (name && role) {
+        // Always use staffIdCounter for new staff, do not decrement on delete
+        staffList.push({ id: staffIdCounter, name, role });
+        staffIdCounter++; // Increment for next staff, even if deleted
+        renderStaffTable();
+        hideAddStaffForm();
+        addRecentAction(`Staff added: ${name}`);
+      }
+    }
+
+    function deleteStaff(id) {
+      const staff = staffList.find(s => s.id === id);
+      staffList = staffList.filter(staff => staff.id !== id);
+      renderStaffTable();
+      if (staff) addRecentAction(`Staff deleted: ${staff.name}`);
+    }
+
+    // Render staff table on page show
+    function showPage(id) {
+      document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'manageStaff') renderStaffTable();
+    }
+
+    // Assigned cases data array
+    let assignedCases = [
+      { id: 1, title: "Theft at Market", staff: "Inspector Raj" }
+    ];
+    let assignedCaseIdCounter = 2;
+
+    function renderAssignedCasesTable() {
+      const tbody = document.getElementById('assignedCasesTableBody');
+      tbody.innerHTML = '';
+      assignedCases.forEach(c => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.title}</td>
+          <td>${c.staff}</td>
+          <td>
+            <button onclick="deleteAssignedCase(${c.id})" style="background:linear-gradient(90deg,#eb2f06,#f6e58d);color:#fff;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showAddAssignForm() {
+      document.getElementById('addAssignForm').style.display = 'block';
+      populateStaffOptions();
+    }
+    function hideAddAssignForm() {
+      document.getElementById('addAssignForm').style.display = 'none';
+      document.getElementById('assignCaseTitle').value = '';
+      document.getElementById('assignStaffName').value = '';
+    }
+
+    function populateStaffOptions() {
+      const select = document.getElementById('assignStaffName');
+      select.innerHTML = '';
+      staffList.forEach(staff => {
+        const option = document.createElement('option');
+        option.value = staff.name;
+        option.textContent = staff.name;
+        select.appendChild(option);
+      });
+    }
+
+    function addAssignedCase(event) {
+      event.preventDefault();
+      const title = document.getElementById('assignCaseTitle').value.trim();
+      const staff = document.getElementById('assignStaffName').value;
+      if (title && staff) {
+        assignedCases.push({ id: assignedCaseIdCounter++, title, staff });
+        renderAssignedCasesTable();
+        hideAddAssignForm();
+        addRecentAction(`Case assigned: ${title} to ${staff}`);
+      }
+    }
+
+    function deleteAssignedCase(id) {
+      const caseObj = assignedCases.find(c => c.id === id);
+      assignedCases = assignedCases.filter(c => c.id !== id);
+      renderAssignedCasesTable();
+      if (caseObj) addRecentAction(`Case deleted: ${caseObj.title}`);
+    }
+
+    // Update showPage to render assigned cases
+    const originalShowPage = showPage;
+    showPage = function(id) {
+      document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'manageStaff') renderStaffTable();
+      if (id === 'assign') renderAssignedCasesTable();
+    };
+
+    // Reports data array
+    let reports = [
+      { id: 1, title: "Weekly Summary", description: "Summary of weekly activities.", pdfName: "" }
+    ];
+    let reportIdCounter = 2;
+
+    function renderReportsTable() {
+      const tbody = document.getElementById('reportsTableBody');
+      tbody.innerHTML = '';
+      reports.forEach(report => {
+        const pdfLink = report.pdfName
+          ? `<a href="${report.pdfUrl}" target="_blank" style="color:#3867d6;">${report.pdfName}</a>`
+          : 'No PDF';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${report.id}</td>
+          <td>${report.title}</td>
+          <td>${report.description}</td>
+          <td>${pdfLink}</td>
+          <td>
+            <button onclick="deleteReport(${report.id})" style="background:linear-gradient(90deg,#eb2f06,#f6e58d);color:#fff;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showAddReportForm() {
+      document.getElementById('addReportForm').style.display = 'block';
+    }
+    function hideAddReportForm() {
+      document.getElementById('addReportForm').style.display = 'none';
+      document.getElementById('reportTitle').value = '';
+      document.getElementById('reportDescription').value = '';
+      document.getElementById('reportPdf').value = '';
+    }
+
+    function addReport(event) {
+      event.preventDefault();
+      const title = document.getElementById('reportTitle').value.trim();
+      const description = document.getElementById('reportDescription').value.trim();
+      const pdfInput = document.getElementById('reportPdf');
+      let pdfName = "";
+      let pdfUrl = "";
+      if (pdfInput.files.length > 0) {
+        const file = pdfInput.files[0];
+        pdfName = file.name;
+        pdfUrl = URL.createObjectURL(file);
+      }
+      if (title && description) {
+        reports.push({ id: reportIdCounter++, title, description, pdfName, pdfUrl });
+        renderReportsTable();
+        hideAddReportForm();
+        addRecentAction(`Report added: ${title}`);
+      }
+    }
+
+    function deleteReport(id) {
+      const report = reports.find(r => r.id === id);
+      reports = reports.filter(report => report.id !== id);
+      renderReportsTable();
+      if (report) addRecentAction(`Report deleted: ${report.title}`);
+    }
+
+    // Update showPage to render reports
+    const prevShowPage = showPage;
+    showPage = function(id) {
+      document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'manageStaff') renderStaffTable();
+      if (id === 'assign') renderAssignedCasesTable();
+      if (id === 'reports') renderReportsTable();
+    };
+
+    // Use assignedCases array as the cases data source
+
+    function renderAllCasesTable() {
+      const tbody = document.getElementById('allCasesTableBody');
+      tbody.innerHTML = '';
+      assignedCases.forEach(c => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.title}</td>
+          <td>${c.staff}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderSearchCasesTable(results) {
+      const tbody = document.getElementById('searchCasesTableBody');
+      tbody.innerHTML = '';
+      results.forEach(c => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.title}</td>
+          <td>${c.staff}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function searchCases(event) {
+      event.preventDefault();
+      const query = document.getElementById('searchCaseInput').value.trim().toLowerCase();
